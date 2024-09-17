@@ -23,27 +23,26 @@ title('Yearly precipitations');
 % -------------------------------------------------------------------------
 % # 5: Extend to multiple years and multiple durations:
 % -------------------------------------------------------------------------
-% -------------------------------------------------------------------------
-% # 5: Calcul simple du maximum de précipitations annuelles pour différentes durées
-% -------------------------------------------------------------------------
 D = [1, 3, 6, 12, 24, 48];
 
-% regrouper les annnées
+% Initialize variables
 currentYear = y(1981);  
 AnnualMax = [];      
 yearIndex = 1;
 
 % lignes de la matrice
 for i = 1:length(y)
-    if y(i) ~= currentYear  
+    % Check if we are still in the same year
+    if y(i) ~= currentYear || i == length(y)
         currentYearData = h(y == currentYear);
-        yearMax = NaN(1, length(D));
+        % store maxima for each duration
+        yearMax = zeros(1, length(D));
         
         for j = 1:length(D)
             duration = D(j); 
             fenetre = []; 
             
-            % Lcolonnes de la matrice
+            % colonnes de la matrice
             for k = 1:(length(currentYearData) - duration + 1)
                 windowSum = sum(currentYearData(k:k + duration - 1));
                 fenetre = [fenetre; windowSum];
