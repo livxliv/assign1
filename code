@@ -11,3 +11,15 @@ plot(annual_sum.Year,annual_sum.sum_Rain);
 xlabel('Years');
 ylabel('Precipitations in mm');
 title('Yearly precipitations');
+
+% -------------------------------------------------------------------------
+% # 3:  Compute rainfall maxima of a certain duration
+% -------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------
+% # 4: Compute rainfall maxima of a certain duration over a year
+% -------------------------------------------------------------------------
+
+% -------------------------------------------------------------------------
+% # 5: Extend to multiple years and multiple durations:
+% -------------------------------------------------------------------------
