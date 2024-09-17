@@ -35,7 +35,7 @@ yearIndex = 1;
 
 % lignes de la matrice
 for i = 1:length(y)
-    if y(i) ~= currentYear  %
+    if y(i) ~= currentYear  
         currentYearData = h(y == currentYear);
         yearMax = NaN(1, length(D));
         
