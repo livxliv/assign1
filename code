@@ -1,1 +1,13 @@
-print(coucou)
+% -------------------------------------------------------------------------
+% # 2: Plot with annual rainfall over the years
+% -------------------------------------------------------------------------
+
+precipitation=table(y, h, 'VariableNames', {'Year', 'Rain'});
+
+annual_sum = varfun(@sum, precipitation, 'InputVariables', 'Rain', 'GroupingVariables', 'Year');
+annual_sum.GroupCount = [];
+
+plot(annual_sum.Year,annual_sum.sum_Rain);
+xlabel('Years');
+ylabel('Precipitations in mm');
+title('Yearly precipitations');
