@@ -84,50 +84,7 @@ for i = 1:length(y)
 end
 
 % Display the result
-disp(AnnualMax);% Define durations [hours] for calculating rainfall maxima
-D = [1, 3, 6, 12, 24, 48];
-
-% Initialize variables
-currentYear = y(1);  % Start with the first year in the data
-AnnualMax = [];      % Store the annual maximum rainfall for each duration
-yearIndex = 1;
-
-% Loop through the data by year
-for i = 1:length(y)
-    % Check if we've moved to a new year or reached the end of the data
-    if y(i) ~= currentYear || i == length(y)
-        currentYearData = h(y == currentYear); % Extract data for the current year
-        
-        % Initialize max values for each duration
-        yearMax = zeros(1, length(D));
-        
-        % Loop through each duration and calculate maximum rainfall
-        for j = 1:length(D)
-            duration = D(j); 
-            windowMax = []; % To store sums of rainfall over the duration
-            
-            % Slide through the year's data with a window of the given duration
-            for k = 1:(length(currentYearData) - duration + 1)
-                windowSum = sum(currentYearData(k:k + duration - 1)); % Sum over the window
-                windowMax = [windowMax; windowSum]; % Store the sum
-            end
-            
-            % Store the maximum rainfall for the current duration
-            yearMax(j) = max(windowMax);
-        end
-        
-        % Add this year's max values to the AnnualMax matrix
-        AnnualMax(yearIndex, :) = yearMax;
-        
-        % Move to the next year
-        currentYear = y(i);
-        yearIndex = yearIndex + 1;
-    end
-end
-
-% Display the result
 disp(AnnualMax);
-
 % -------------------------------------------------------------------------
 % # 6: save the output
 % useful functions: save
