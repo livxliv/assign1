@@ -1,0 +1,186 @@
+% -------------------------------------------------------------------------
+% Course: Hydrology for Engineers
+% Assignment 1
+% Part 2: Fit a Gumbel distribution and calculate critical rainfall depths
+% -------------------------------------------------------------------------
+
+clear variables %clear the workspace variables
+close all %close alla figures
+clc %clear the command window
+
+% import the data from Part1 using the function load
+load assignment1_output_part1.mat
+
+% -------------------------------------------------------------------------
+% # 1:  Rainfall empirical frequency
+% -------------------------------------------------------------------------
+
+n = length(AnnualMax);             
+sortedMaxima = sort(AnnualMax, 'descend');
+
+% Fréquence empirique (position de tracé de Weibull)
+F_h = (1:n)' / (n + 1);              
+
+% -------------------------------------------------------------------------
+% Optional: Plot empirical frequencies against precipitation depths
+% -------------------------------------------------------------------------
+
+figure;
+hold on;
+
+for indexDuration = 1:length(D)
+    AnnualMaxCol = AnnualMax(:, indexDuration);        
+    sortedMaxima = sort(AnnualMaxCol, 'descend');    
+
+    if D(indexDuration) > 1
+        durationStr = sprintf('Duration: %d hours', D(indexDuration));
+    else
+        durationStr = sprintf('Duration: %d hour', D(indexDuration));
+    end
+    
+    scatter(sortedMaxima, flipud(F_h), 'DisplayName', durationStr); 
+end
+
+xlabel('Precipitation Depth (mm)');
+ylabel('Empirical Frequency');
+title('Empirical Frequency vs. Precipitation Depth');
+legend('Location', 'Best');
+grid on;
+hold off;
+
+% -------------------------------------------------------------------------
+% # 2: Fit the Gumbel distribution
+% -------------------------------------------------------------------------
+% Assuming sortedMaxima and F_h are defined
+% Assuming AnnualMax is defined as a matrix (rows: years, columns: durations)
+D = [1, 3, 6, 12, 24, 48];  % Durations in hours
+N = size(AnnualMax, 1);      % Number of rows
+scatterHandles = gobjects(length(D), 1);  % For scatter plots
+graph_moments = [];  % Handle for moments fit
+graph_gumb = [];     % Handle for Gumbel fit
+
+alpha_Gumbel = zeros(length(D), 1);
+u_Gumbel = zeros(length(D), 1);
+alpha_moments = zeros(length(D), 1);
+u_moments = zeros(length(D), 1);
+
+% Initialize figure
+figure;
+hold on;
+
+% Compute empirical frequencies once, based on the number of data points
+F_h = (1:N)' / (N + 1);  % Weibull plotting position for empirical frequencies
+
+for indexDuration = 1:length(D)
+    % Extract the data for the current duration
+    AnnualMaxCol = AnnualMax(:, indexDuration);        
+    sortedMaxima = sort(AnnualMaxCol, 'descend');    
+
+    % Prepare h_values for smooth plotting
+    h_values = linspace(min(sortedMaxima), max(sortedMaxima), 100); 
+
+    % Method of moments
+    mu_h = mean(sortedMaxima);               
+    sigma_h = std(sortedMaxima);      
+
+    alpha_mom = pi / (sigma_h * sqrt(6));     
+    u_mom = mu_h - (0.5772 / alpha_mom);      
+    Fh_moments = exp(-exp(-alpha_mom * (h_values - u_mom)));
+
+    % Gumbel method
+    y_F = -log(-log(F_h));  % Ensure F_h is the same for all durations
+    mu_yF = mean(y_F);                      
+    sigma_yF = std(y_F);
+
+    alpha_gumbel = sigma_yF / sigma_h;       
+    u_gumbel = mu_h - (mu_yF / alpha_gumbel);
+    Fh_gumbel = exp(-exp(-alpha_gumbel * (h_values - u_gumbel)));
+
+    alpha_Gumbel(indexDuration) = alpha_gumbel;
+    u_Gumbel(indexDuration) = u_gumbel;
+
+    alpha_moments(indexDuration)=alpha_mom;
+    u_moments(indexDuration)=u_mom;
+
+ 
+    durationStr = sprintf('Duration: %d hours', D(indexDuration));
+    scatterHandles(indexDuration) = scatter(sortedMaxima, flipud(F_h(1:length(sortedMaxima))), 'DisplayName', durationStr); 
+    scatter(sortedMaxima, flipud(F_h(1:length(sortedMaxima))),'DisplayName', durationStr); 
+   
+    graph_moments=plot(h_values, Fh_moments, 'r', 'LineWidth', 2, 'DisplayName', sprintf('Moments Fit'));
+    %graph_moments.Annotation.LegendInformation.IconDisplayStyle = 'off';
+    
+    graph_gumb=plot(h_values, Fh_gumbel, 'g', 'LineWidth', 2,'DisplayName', sprintf('Gumbel Fit'));
+    %graph_gumb.Annotation.LegendInformation.IconDisplayStyle = 'off';
+
+end
+
+% Labels and legend
+xlabel('Rainfall Depth (mm)');
+ylabel('Non-exceedance Probability (Fh)');
+title('Fitted Gumbel Distributions vs Empirical Frequency');
+legend([scatterHandles; graph_moments; graph_gumb], 'Location', 'Best');
+grid on;
+hold off;
+
+
+
+% -------------------------------------------------------------------------
+% # 5: Th and h
+% -------------------------------------------------------------------------
+T_values = [10, 40, 100];
+T_h_weibull = (n + 1) ./ (1:n)'; 
+H_Gum = zeros(length(T_values), length(D));
+
+figure;
+hold on;
+scatterHandles = gobjects(length(D), 1);
+
+for indexDuration = 1:length(D)
+    % Extract and sort the annual maxima for the current duration
+    AnnualMaxCol = AnnualMax(:, indexDuration);        
+    sortedMaxima = sort(AnnualMaxCol, 'descend');
+    
+  
+    h_values = linspace(min(sortedMaxima), max(sortedMaxima), 100);  % Smoothed rainfall depths
+    T_smooth = linspace(1, 100, 100);  % Return periods for smooth Gumbel curve
+    %h_gumbel_smooth = u_gumbel - (1 / alpha_gumbel) * log(-log(1 - 1 ./ T_smooth));
+
+    % Plot empirical data points
+
+    durationStr = sprintf('Duration: %d hours', D(indexDuration));
+    scatterHandles(indexDuration) = scatter(sortedMaxima,  T_h_weibull, 'DisplayName', durationStr); 
+    
+    alpha_moments_duration = alpha_moments(indexDuration);
+    u_moments_duration = u_moments(indexDuration);
+    alpha_gumbel_duration = alpha_Gumbel(indexDuration);
+    u_gumbel_duration = u_Gumbel(indexDuration);
+    
+ 
+    h_gumbel_smooth = u_gumbel_duration - (1 / alpha_gumbel_duration) * log(-log(1 - 1 ./ T_smooth));
+    
+    graph=plot(h_gumbel_smooth, T_smooth, 'r', 'LineWidth', 2, 'DisplayName', sprintf('Gumbel Fit'));
+    
+
+    for i = 1:length(T_values)
+        H_Gum(i, indexDuration) = u_gumbel_duration - (1 / alpha_gumbel_duration) * log(-log(1 - 1 / T_values(i)));
+    end
+end
+    
+xlabel('Rainfall Depth (mm)');
+ylabel('Return Period (years)');
+title('Rainfall Depth vs Return Period for Different Durations');
+set(gca, 'YScale', 'log');  
+legend([scatterHandles; graph], 'Location', 'Best');
+grid on;
+hold off;
+
+
+disp('Matrix H_Gum:');
+disp(H_Gum);
+
+save('assignment1_output_part2.mat', 'H_Gum', 'T', 'D');
+
+%{
+save('assignment1_output_part2.mat', 'H_Gum', 'T', 'D');
+%}
