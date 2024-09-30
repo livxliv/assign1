@@ -16,9 +16,9 @@ clc %clear the command window
 % import the data from previous part
 load assignment1_output_part2.mat 
 
-c_values = linspace(0,100,5);
-f_values = linspace(-1,1,5);
-e_values = linspace(0,1,5);
+c_values = linspace(0,100,50);
+f_values = linspace(-1,1,50);
+e_values = linspace(0,1,50);
 
 return_periods = {'T10', 'T40', 'T100'};
 errors = [25,60,120];
@@ -39,7 +39,7 @@ for return_periods_index = 1:length(return_periods)
     for c = c_values
         for f = f_values
             for e = e_values
-                error = sum_squared_differences(durations, gumbel_data, c, e, f);
+                error = sum_squared_differences(D, gumbel_data, c, e, f);
                 
                 if error < best_error 
                     best_error = error;
@@ -72,19 +72,62 @@ param_table = array2table(calibrated_params, 'VariableNames', {'c', 'e', 'f', 'E
                            'RowNames', return_periods);
 disp(param_table); % Display the table
 
+%-------------------------------------------------------------------
+
+% Define a large number of rainfall durations for a smooth curve
+D_plot = linspace(min(D), max(D), 100); % 100 points for smoothness
+
+% Define a color map for consistent color for lines and points
+color_map = lines(length(return_periods)); % Get different colors for each return period
+
+figure;
+hold on;
+
+% Loop over each return period to plot the DDF curves and Gumbel estimates
+for return_periods_index = 1:length(return_periods)
+    T = return_periods{return_periods_index};
+    gumbel_data = H_Gum(return_periods_index, :); % Gumbel estimates
+    best_params = calibrated_params(return_periods_index, 1:3); % Best c, e, f
+
+    % Calculate estimated rainfall depths using the calibrated parameters
+    h_estimated = estimated_rainfall_depth(D_plot, best_params(1), best_params(2), best_params(3));
+
+    % Plot the DDF curve for this return period with dashed lines
+    plot(D_plot, h_estimated, '--', 'Color', color_map(return_periods_index, :), ...
+        'DisplayName', ['DDF Curve T=' T ' years'], 'LineWidth', 2);
+
+    % Plot the Gumbel estimates for the measured durations with the same color as the line
+    scatter(D, gumbel_data, 50, color_map(return_periods_index, :), 'filled', ...
+        'DisplayName', ['Gumbel Estimates T=' T ' years']);
+end
+
+% Add labels, title, legend, etc.
+xlabel('Duration (hours)');
+ylabel('Rainfall Depth (mm)');
+title('Depth-Duration-Frequency (DDF) Curves');
+legend('show');
+grid on;
+hold off;
+
+
+
+%-------------------------------------------------------------------
 
 % calculer le h estimé
 function [h] = estimated_rainfall_depth(D,c,e,f)
-    h = (c * D) / (D^e + f);
+    h = (c * D) ./ (D.^e + f); % Use ./ and .^ for element-wise operations
 end 
 
-function error = sum_squared_differences(durations, gumbel_data, c, e, f)
+function error = sum_squared_differences(D, gumbel_data, c, e, f)
     %initialiser bro
     error = 0; 
-    for i = 1:length(durations)
-        D = durations(i);
+    for i = 1:length(D)
+        durations = D(i);
         h_gumbel = gumbel_data(i);
-        h_estimated = estimated_rainfall_depth(D, c, e, f);
+        h_estimated = estimated_rainfall_depth(durations, c, e, f);
         error = error + (h_estimated - h_gumbel)^2; 
     end
 end
+
+
+
