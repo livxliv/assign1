@@ -73,7 +73,7 @@ param_table = array2table(calibrated_params, 'VariableNames', {'c', 'e', 'f', 'E
 disp(param_table); % Display the table
 
 %-------------------------------------------------------------------
-
+% PLOT
 % Define a large number of rainfall durations for a smooth curve
 D_plot = linspace(min(D), max(D), 100); % 100 points for smoothness
 
