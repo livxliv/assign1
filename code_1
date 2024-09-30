@@ -91,7 +91,7 @@ disp(AnnualMax);
 % -------------------------------------------------------------------------
 % when you are confident about your results, save the variables AnnualMax
 % and D by uncommenting the following line: 
-save('assignment1_output_part1.mat','D','AnnualMax');
+save('assignment1_output_part1.mat','D','AnnualMax', 'T');
 
 
 
