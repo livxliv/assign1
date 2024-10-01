@@ -36,7 +36,15 @@ fprintf('%i empty values\n', sum(emptyValues)); %display how many missing values
 % # 2: Plot with annual rainfall over the years
 % -------------------------------------------------------------------------
 
-% plot(y,h) ?
+precipitation=table(y, h, 'VariableNames', {'Year', 'Rain'});
+
+annual_sum = varfun(@sum, precipitation, 'InputVariables', 'Rain', 'GroupingVariables', 'Year');
+annual_sum.GroupCount = [];
+
+bar(annual_sum.Year,annual_sum.sum_Rain);
+xlabel('Years');
+ylabel('Precipitations in mm');
+title('Yearly precipitations');
 
 % -------------------------------------------------------------------------
 % # 5: Extend to multiple years and multiple durations
