@@ -41,7 +41,7 @@ ylabel('Precipitations in mm');
 title('Yearly precipitations');
 
 % -------------------------------------------------------------------------
-% # 5: Extend to multiple years and multiple durations
+% # 3: Extend to multiple years and multiple durations
 % -------------------------------------------------------------------------
 
 
@@ -81,7 +81,7 @@ end
 
 disp(AnnualMax);
 % -------------------------------------------------------------------------
-% # 6: save the output
+% # 4: save the output
 % useful functions: save
 % -------------------------------------------------------------------------
 
