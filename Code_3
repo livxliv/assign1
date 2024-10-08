@@ -4,16 +4,16 @@
 % Part 3: Construction of depth-duration-frequency (DDF) curves 
 % -------------------------------------------------------------------------
 
-clear variables %clear the workspace variables
-close all %close all figures
-clc %clear the command window
+clear variables 
+close all 
+clc 
+
 
 % -------------------------------------------------------------------------
 % # 1: Calibrate the DDF curve parameters
 % useful functions: linspace
 % -------------------------------------------------------------------------
 
-% import the data from previous part
 load assignment1_output_part2.mat 
 
 c_values = linspace(0,100,50);
@@ -23,19 +23,18 @@ e_values = linspace(0,1,50);
 return_periods = {'T10', 'T40', 'T100'};
 errors = [25,60,120];
 
-% Initialize arrays to store parameter values and errors
+
 calibrated_params = zeros(length(return_periods), 4); 
 
 for return_periods_index = 1:length(return_periods) 
     T = return_periods{return_periods_index};
-    gumbel_data = H_Gum(return_periods_index, :); %avoir le gumbel pour chaque temps de retour
-    max_errors = errors(return_periods_index); % meme dimension donc idx cbn
-    
-    %initialiser encoooore
+    gumbel_data = H_Gum(return_periods_index, :); 
+    max_errors = errors(return_periods_index); 
+
     best_error = inf;
     best_params = zeros(1,3);
     
-    % itération sur chaque valeur
+
     for c = c_values
         for f = f_values
             for e = e_values
@@ -43,22 +42,22 @@ for return_periods_index = 1:length(return_periods)
                 
                 if error < best_error 
                     best_error = error;
-                    best_params = [c,e,f];  % stocker les nvx best params 
+                    best_params = [c,e,f];  
                 end 
             end 
         end
     end
     
-    % Store best parameters and error
+  
     calibrated_params(return_periods_index, :) = [best_params, best_error];
 
-    % chatgipitou
 
-    % Output the best parameters and error for the current return period
+
+   
     fprintf('Best parameters for T=%s years: c=%.2f, e=%.2f, f=%.2f\n', T, best_params(1), best_params(2), best_params(3));
     fprintf('Smallest sum of squared errors: %.2f (target: %.2f)\n', best_error, max_errors);
     
-    % Check if the error meets the required threshold
+  
     if best_error <= max_errors
         fprintf('The error for T=%s is within the acceptable range!\n', T);
     else
@@ -66,42 +65,46 @@ for return_periods_index = 1:length(return_periods)
     end
 end
 
-%chatgipitou
-% Create a table with the calibrated parameter values and errors
+
+
 param_table = array2table(calibrated_params, 'VariableNames', {'c', 'e', 'f', 'Error'}, ...
                            'RowNames', return_periods);
-disp(param_table); % Display the table
+disp(param_table); 
 
-%-------------------------------------------------------------------
-% PLOT
-% Define a large number of rainfall durations for a smooth curve
-D_plot = linspace(min(D), max(D), 100); % 100 points for smoothness
 
-% Define a color map for consistent color for lines and points
-color_map = lines(length(return_periods)); % Get different colors for each return period
+
+% -------------------------------------------------------------------------
+% # 2: Plot
+% -------------------------------------------------------------------------
+
+
+D_plot = linspace(min(D), max(D), 100); 
+
+
+color_map = lines(length(return_periods)); 
 
 figure;
 hold on;
 
-% Loop over each return period to plot the DDF curves and Gumbel estimates
+
 for return_periods_index = 1:length(return_periods)
     T = return_periods{return_periods_index};
-    gumbel_data = H_Gum(return_periods_index, :); % Gumbel estimates
-    best_params = calibrated_params(return_periods_index, 1:3); % Best c, e, f
+    gumbel_data = H_Gum(return_periods_index, :); 
+    best_params = calibrated_params(return_periods_index, 1:3); 
 
-    % Calculate estimated rainfall depths using the calibrated parameters
+  
     h_estimated = estimated_rainfall_depth(D_plot, best_params(1), best_params(2), best_params(3));
 
-    % Plot the DDF curve for this return period with dashed lines
+   
     plot(D_plot, h_estimated, '--', 'Color', color_map(return_periods_index, :), ...
         'DisplayName', ['DDF Curve T=' T ' years'], 'LineWidth', 2);
 
-    % Plot the Gumbel estimates for the measured durations with the same color as the line
+   
     scatter(D, gumbel_data, 50, color_map(return_periods_index, :), 'filled', ...
         'DisplayName', ['Gumbel Estimates T=' T ' years']);
 end
 
-% Add labels, title, legend, etc.
+
 xlabel('Duration (hours)');
 ylabel('Rainfall Depth (mm)');
 title('Depth-Duration-Frequency (DDF) Curves');
@@ -112,14 +115,16 @@ hold off;
 
 
 %-------------------------------------------------------------------
+% # 3: Calculate h estimated
+%-------------------------------------------------------------------
 
-% calculer le h estimé
+
 function [h] = estimated_rainfall_depth(D,c,e,f)
     h = (c * D) ./ (D.^e + f); % Use ./ and .^ for element-wise operations
 end 
 
 function error = sum_squared_differences(D, gumbel_data, c, e, f)
-    %initialiser bro
+
     error = 0; 
     for i = 1:length(D)
         durations = D(i);
